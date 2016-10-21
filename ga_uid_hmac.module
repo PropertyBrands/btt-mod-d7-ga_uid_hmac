@@ -1,0 +1,38 @@
+<?php
+/**
+ * Helper function to bring get the HMAC sent as a userId sent
+ * with Google Analytics tracking beacons.
+ *
+ * @param $user - integer user id or drupal user object.
+ * @return string
+ */
+function ga_uid_hmac_get($user) {
+  if(is_object($user)) {
+    $user = $user->uid;
+  }
+  return drupal_hmac_base64($user, drupal_get_private_key() . drupal_get_hash_salt());
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function ga_uid_hmac_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+
+/**
+ * Implements hook_views_data_alter().
+ */
+function ga_uid_hmac_views_data_alter(&$data) {
+  $data['users']['ga_uid'] = array(
+    'title' => 'Google Analytics userId',
+    'help' => 'Calculated HMAC sent by the Google Analytics module.',
+    'real field' => 'uid',
+    'field' => array(
+      'handler' => 'views_handler_field_ga_uid',
+    ),
+  );
+}
